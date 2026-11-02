@@ -14,15 +14,19 @@ class Bounding_Box:
         self.height = height
 
     def area(self) -> float:
+        """Returns the area of the bounding box"""
         return self.width * self.height
 
     # checking to see if multiple bounding boxes are overlapped
     def intersection(self, other: 'Bounding_Box') -> bool:
+        """Returns boolean for whether or not bounding boxes are overlapping"""
         # Placeholder for overlapping geometric calculation
+        # Depends on how strict we want an intersection to be
         return True
 
     # should help us distinguish boxes if they are overlapped
     def center(self) -> tuple:
+        """Returns the coordinates of the center of the box"""
         return (self.x + self.width / 2, self.y + self.height / 2)
 
 
@@ -35,13 +39,16 @@ class Image_Payload:
         self.metadata = metadata
 
     def getMetaData(self, key: str) -> Any:
+        """Returns meta data of image"""
         return self.metadata.get(key)
 
     def updateMetadata(self, key: str, value: Any) -> bool:
+        """Returns boolean on a successful meta data update"""
         self.metadata[key] = value
         return True
 
     def getSize(self) -> int:
+        """Returns size of image"""
         return len(self.rawBytes)
 
 # =======================================
@@ -61,13 +68,14 @@ class Inference_Result:
     # ================================
     @property
     def detectedObjects(self) -> List[str]:
+        """Returns detectedObjects list"""
         return self._detectedObjects
 
     @detectedObjects.setter
     def detectedObjects(self, detObjList):
         """Setter checks if detectedObjects is in list form"""
         if not isinstance(detObjList, list):
-            raise TypeError("Detected Objects is not in List form.")
+            raise TypeError("Detected Objects must be of type list[str].")
         self._detectedObjects = detObjList   
 
     # =================================
@@ -75,13 +83,14 @@ class Inference_Result:
     # =================================
     @property
     def confidenceScores(self) -> List[float]:
+        """Returns confidenceScores list"""
         return self._confidenceScores
     
     @confidenceScores.setter
     def confidenceScores(self, confScoreList):
         """Setter checks if confidenceScores is in list form"""
         if not isinstance(confScoreList, list):
-            raise TypeError("Confidence Scores is not in List form.")
+            raise TypeError("Confidence Scores must be of type list[float].")
         self._confidenceScores = confScoreList
 
     # ==============================
@@ -89,13 +98,14 @@ class Inference_Result:
     # ==============================
     @property
     def boundingBoxes(self) -> List[Bounding_Box]:
+        """Returns list of bounding boxes"""
         return self._boundingBoxes
     
     @boundingBoxes.setter
     def boundingBoxes(self, boundBoxList):
         """Setter checks if boundingBoxes is in list form"""
         if not isinstance(boundBoxList, list):
-            raise TypeError("Bounding Boxes are not in list form.")
+            raise TypeError("Bounding Boxes must be of type list[Bounding_Box].")
         self._boundingBoxes = boundBoxList
 
     # ==========================
@@ -103,13 +113,14 @@ class Inference_Result:
     # ==========================
     @property
     def timestamp(self) -> datetime:
+        """Returns timestamp"""
         return self._timestamp
 
     @timestamp.setter
     def timestamp(self, dtStamp):
         """Setter checks if timestamp is in datetime form"""
         if not isinstance(dtStamp, datetime):
-            raise TypeError("Timestamp is not in datetime form.")
+            raise TypeError("Timestamp must be of type datetime.")
         self._timestamp = dtStamp
 
     # ==================
@@ -119,6 +130,7 @@ class Inference_Result:
     def getTopConfidence(self) -> float:
         """Returns top confidence score"""
         return max(self._confidenceScores) if self._confidenceScores else 0.0
+        
     @property
     def hasDetections(self) -> bool:
         """Returns boolean representation of whether a detectedObjects list exist"""
@@ -140,10 +152,12 @@ class Image_Process_Engine:
     # ================================
     @property
     def processingMode(self) -> str:
+        """Returns processingMode"""
         return self._processingMode
 
     @processingMode.setter
     def processingMode(self, pMode):
+        """Checks to make sure processingMode input is a string"""
         if not isinstance(pMode, str):
             raise TypeError("Processing Mode must be of type string.")
         self._processingMode = pMode
@@ -153,10 +167,12 @@ class Image_Process_Engine:
     # ================================
     @property
     def lastProcessedAt(self) -> datetime:
+        """Returns lastProcessedAt timestamp"""
         return self._lastProcessedAt
 
     @lastProcessedAt.setter
     def lastProcessedAt(self, lastPTime):
+        """Checks if lastProcessedAt is datetime"""
         if not isinstance(lastPTime, datetime):
             raise TypeError("lastProcessedAt must be of type datetime.")
         self._lastProcessedAt = lastPTime
@@ -165,9 +181,11 @@ class Image_Process_Engine:
     #   Utility Getters
     # ==================
     def preprocess(self, imagePayload: Image_Payload) -> Image_Payload:
+        """Returns imagePayload"""
         return imagePayload
 
     def postprocess(self, report: 'Facility_Metrics_Report') -> 'Facility_Metrics_Report':
+        """Returns FMR"""
         return report
 
 class Truck_Detection_Model(Image_Process_Engine):
@@ -182,10 +200,12 @@ class Truck_Detection_Model(Image_Process_Engine):
     # =============================
     @property
     def modelVersion(self) -> str:
+        """Returns mdoelVersion"""
         return self._modelVersion
 
     @modelVersion.setter
     def modelVersion(self, mVersion):
+        """Checks if modelVersion is a string"""
         if not isinstance(mVersion, str):
             raise TypeError("Model Version must be of type string.")
         self._modelVersion = mVersion
@@ -195,10 +215,12 @@ class Truck_Detection_Model(Image_Process_Engine):
     # ====================================
     @property
     def confidenceThreshold(self) -> float:
+        """Returns confidenceThreshold"""
         return self._confidenceThreshold
 
     @confidenceThreshold.setter
     def confidenceThreshold(self, conThreshold):
+        """Checks if confidenceThreshold is a float"""
         if not isinstance(conThreshold, float):
             raise TypeError("Confidence Threshold must be of type float.")
         self._confidenceThreshold = conThreshold
@@ -207,6 +229,7 @@ class Truck_Detection_Model(Image_Process_Engine):
     #   Utility Getters
     # ==================
     def detect(self, imagePayload: Image_Payload) -> Inference_Result:
+        """Detects objects and returns Inference_Result"""
         # Simulate local runtime detection inference pass
         # In deployment, this uses self._confidenceThreshold to filter predictions
         boxes = [Bounding_Box(10.0, 20.0, 50.0, 100.0)]
@@ -218,6 +241,7 @@ class Truck_Detection_Model(Image_Process_Engine):
         )
 
     def loadModel(self, version: str) -> bool:
+        """Returns boolean representing if model was loaded correctly"""
         self._modelVersion = version
         return True
 
@@ -233,10 +257,12 @@ class Truck_Counting_Engine(Image_Process_Engine):
     # ==============================
     @property
     def trackingState(self) -> Dict:
+        """Returns trackingState"""
         return self._trackingState
 
     @trackingState.setter
     def trackingState(self, tState):
+        """Checks if trackingState is a Dict"""
         if not isinstance(tState, Dict):
             raise TypeError("Tracking State must be of type Dictionary.")
         self._trackingState = tState
@@ -246,10 +272,12 @@ class Truck_Counting_Engine(Image_Process_Engine):
     # ===============================
     @property
     def temporalWindow(self) -> int:
+        """Returns temporalWindow"""
         return self._temporalWindow
 
     @temporalWindow.setter
     def temporalWindow(self, tWindow):
+        """Checks if temporalWindow is an integer"""
         if not isinstance(tWindow, int):
             raise TypeError("Temporal Window must be of type int.")
         self._temporalWindow = tWindow
@@ -258,6 +286,7 @@ class Truck_Counting_Engine(Image_Process_Engine):
     #   Utility Getters
     # ==================
     def count(self, result: Inference_Result, facilityID: str) -> 'Facility_Metrics_Report':
+        """Counts trucks and returns FMR"""
         # Business logic processes Bounding_Boxes and trackingState over time
         count_value = result.getDetectionCount() 
         summaries = [f"Found {count_value} targets at {result._timestamp}"]
@@ -270,9 +299,11 @@ class Truck_Counting_Engine(Image_Process_Engine):
         )
 
     def updateTrackingState(self, result: Inference_Result) -> bool:
+        """Returns boolean representing TrackingState update success"""
         return True
 
     def resetTrackingState(self) -> bool:
+        """Returns boolean representing TrackingState reset success"""
         self.trackingState.clear()
         return True
 
@@ -289,12 +320,15 @@ class Facility_Metrics_Report:
         self.detectionSummaries = detectionSummaries
 
     def addDetectionSummary(self, summary: str) -> None:
+        """Appends summary to detectionSummaries list"""
         self.detectionSummaries.append(summary)
 
     def getSummaryCount(self) -> int:
+        """Returns totalTruckCount"""
         return self.totalTruckCount
 
     def generateReportText(self) -> str:
+        """Returns string representation of FMR"""
         return f"Facility {self.facilityID} Report Summary: Total Count = {self.totalTruckCount}"
 
 
@@ -311,10 +345,12 @@ class Orchestrator:
     # =============================
     @property
     def requestCount(self) -> int:
+        """Returns requestCount"""
         return self._requestCount
 
     @requestCount.setter
     def requestCount(self, reqCount):
+        """Checks if requestCount is an integer"""
         if not isinstance(reqCount, int):
             raise TypeError("Request Count must be of type int.")
         self._requestCount = reqCount
@@ -324,10 +360,12 @@ class Orchestrator:
     # ===============================
     @property
     def lastReceivedAt(self) -> datetime:
+        """Returns lastReceivedAt timestamp"""
         return self._lastReceivedAt
 
     @lastReceivedAt.setter
     def lastReceivedAt(self, lastReceiveAt):
+        """Checks if lastReceivedAt is in datetime form"""
         if not isinstance(lastReceiveAt, datetime):
             raise TypeError("lastReceivedAt must be of type datetime.")
         self._lastReceivedAt = lastReceiveAt
@@ -336,6 +374,7 @@ class Orchestrator:
     #   Utility Getters
     # ==================
     def receivePayload(self, rawImage: tuple) -> Image_Payload:
+        """Returns Image_Payload form of rawImage"""
         try:
             return Image_Payload(*rawImage)
         except Exception as e:
@@ -343,6 +382,7 @@ class Orchestrator:
             return None
 
     def validatePayload(self, imagePayload: Image_Payload) -> bool:
+        """Returns boolean representing imagePayload is of type imagePayload and not empty"""
         if imagePayload and imagePayload.getSize() > 0:
             return True
         return False
