@@ -13,3 +13,7 @@ NOTE:
   Image Payload may have to be adjusted based on the structure of the image data. I could've gone ahead and done this but I was more focused
     on the overall structure of the system first.
   Everything else, God willing, should work right out the box
+
+LOGIN SYSTEM:
+  Still needs to be added
+  I think a simple dictionary can be used for our purposes
