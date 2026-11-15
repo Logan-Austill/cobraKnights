@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sites Activity</title>
+  <style>
+    :root {
+      --blue: #071b91;
+      --accent: #078cff;
+      --panel: #f3f3f3;
+      --border: #aaa;
+      --green: #08d82d;
+      --red: #e32626;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: #111;
+      background: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .blue-overlay {
+      position: fixed;
+      inset: 0 auto 0 0;
+      width: 128px;
+      min-height: 100vh;
+      background: var(--blue);
+    }
+
+    .page { margin-left: 128px; padding: 18px 24px; }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 48px;
+    }
+    h1 { margin: 0; font-size: 25px; }
+    .updated { color: #333; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(285px, 390px) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    .options-panel {
+      min-height: 680px;
+      padding: 18px 12px;
+      background: var(--panel);
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+    }
+
+    .search {
+      width: 100%;
+      height: 40px;
+      padding: 0 13px;
+      border: 2px solid var(--border);
+      border-radius: 11px;
+      background: white;
+      font-size: 14px;
+    }
+
+    .filters { display: flex; gap: 10px; margin: 10px 0 25px; }
+    .filter {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid;
+      border-radius: 18px;
+      background: white;
+      cursor: pointer;
+    }
+    .filter.available { border-color: #16e84a; }
+    .filter.full { border-color: #ff4545; }
+    .filter.active { outline: 2px solid #cce7ff; font-weight: bold; }
+
+    .site-list { display: grid; gap: 20px; }
+    .site-card {
+      width: 100%;
+      padding: 10px;
+      text-align: left;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .site-card:hover, .site-card.selected {
+      border-color: var(--accent);
+      background: #eaf5ff;
+    }
+    .site-card h2 { margin: 0 0 9px; font-size: 19px; }
+    .card-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      text-align: center;
+    }
+    .stat { padding: 5px 4px 8px; min-width: 0; }
+    .stat + .stat { border-left: 2px solid #222; }
+    .stat-label { display: block; min-height: 28px; font-size: 13px; }
+    .stat-value { display: block; margin-top: 2px; font-size: 26px; font-weight: 700; }
+    .status { font-size: 20px; font-weight: 700; }
+    .status.available { color: #08bf27; }
+    .status.full { color: var(--red); }
+    .next-time {
+      display: block;
+      margin: 9px 7px 0;
+      padding: 5px;
+      text-align: center;
+      background: #ffe0e0;
+      border: 1px solid #ff5555;
+      border-radius: 7px;
+      font-size: 13px;
+    }
+
+    .list-message {
+      padding: 18px 8px;
+      color: #666;
+      text-align: center;
+      line-height: 1.45;
+    }
+
+    /* Hidden until a site is selected */
+    .details-section { display: none; }
+    .details-section.visible { display: block; }
+    .details-heading { margin: 0 0 7px 8px; font-size: 25px; }
+    .details-panel {
+      padding: 12px;
+      background: var(--panel);
+      border: 2px solid var(--accent);
+      border-radius: 12px;
+    }
+    .details-title { margin: 0 0 8px 5px; font-size: 23px; }
+    .detail-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .detail-stat {
+      min-height: 112px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 8px;
+      text-align: center;
+      background: white;
+      border: 2px solid var(--border);
+      border-radius: 11px;
+    }
+    .detail-label { font-size: 17px; }
+    .detail-value { font-size: 34px; font-weight: 700; }
+    .detail-value small { font-size: 17px; font-weight: 400; }
+    .status-box { background: var(--green); }
+    .status-box.full { background: #ffdddd; color: var(--red); }
+    .detail-placeholder {
+      min-height: 250px;
+      display: grid;
+      place-items: center;
+      margin-top: 14px;
+      padding: 24px;
+      text-align: center;
+      color: #666;
+      background: white;
+      border: 2px dashed #bbb;
+      border-radius: 10px;
+    }
+    .detail-placeholder p { max-width: 440px; line-height: 1.5; }
+
+    @media (max-width: 900px) {
+      .blue-overlay { width: 72px; }
+      .page { margin-left: 72px; padding: 16px; }
+      .workspace { grid-template-columns: 1fr; }
+      .options-panel { min-height: auto; }
+      .detail-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .topbar { align-items: flex-start; flex-direction: column; margin-bottom: 28px; }
+    }
+    @media (max-width: 480px) {
+      .blue-overlay { width: 42px; }
+      .page { margin-left: 42px; padding: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="blue-overlay">
+    <img src="C:\Users\blubb\Pictures\sitepro_logo.png"
+         alt="SitePro Logo"
+         class="sidebar-logo">
+</aside>
+
+  <main class="page">
+    <header class="topbar">
+      <h1>Sites Activity</h1>
+      <div class="updated">Last Updated: <span id="lastUpdated">Waiting for data</span></div>
+    </header>
+
+    <div class="workspace">
+      <section class="options-panel" aria-label="Site options">
+        <input id="siteSearch" class="search" type="search"
+               placeholder="Search SiteID..." aria-label="Search by SiteID">
+
+        <div class="filters">
+          <button class="filter available" data-filter="available" type="button">Available</button>
+          <button class="filter full" data-filter="full" type="button">Full</button>
+        </div>
+
+        <!-- Site cards are inserted here after backend data arrives. -->
+        <div id="siteList" class="site-list">
+          <div class="list-message" id="listMessage">Waiting for site data...</div>
+        </div>
+      </section>
+
+      <!-- This panel stays hidden until the user selects a site card. -->
+      <section class="details-section" id="detailsSection" aria-label="Site details">
+        <h2 class="details-heading">Site Details</h2>
+        <div class="details-panel">
+          <h3 class="details-title" id="detailSiteTitle"></h3>
+          <div class="detail-stats">
+            <div class="detail-stat">
+              <span class="detail-label">Trucks on Site</span>
+              <span class="detail-value" id="detailTrucks">—</span>
+            </div>
+            <div class="detail-stat">
+              <span class="detail-label">Lanes in Use</span>
+              <span class="detail-value"><span id="detailLanes">—</span><small> / <span id="detailTotal">—</span></small></span>
+            </div>
+            <div class="detail-stat status-box" id="detailStatusBox">
+              <span class="detail-label">Status</span>
+              <span class="detail-value" id="detailStatus">—</span>
+            </div>
+            <div class="detail-stat">
+              <span class="detail-label">Next Available Time</span>
+              <span class="detail-value"><span id="detailTime">—</span><small> mins.</small></span>
+            </div>
+          </div>
+          <div class="detail-placeholder">
+            <p><strong>Additional site details</strong><br>
+              This area is reserved for more information supplied by your backend.
+              No pictures or logos are included in this template.
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    /*
+      BACKEND CONNECTION
+      Replace API_URL with the endpoint provided by your backend.
+
+      Expected JSON response example:
+      [
+        {
+          "siteId": "55",
+          "trucks": 1,
+          "lanesInUse": 1,
+          "totalLanes": 2,
+          "dispensingMinutes": 30,
+          "status": "available",
+          "nextAvailableMinutes": null
+        }
+      ]
+
+      The example above is documentation only. No site data is hardcoded
+      into the page; the cards are created from the backend response.
+    */
+
+    const API_URL = "/api/sites"; // Change this to your backend endpoint.
+
+    const siteList = document.getElementById("siteList");
+    const detailsSection = document.getElementById("detailsSection");
+    const searchInput = document.getElementById("siteSearch");
+    const listMessage = document.getElementById("listMessage");
+
+    let sites = [];
+    let selectedSiteId = null;
+    let activeFilter = "all";
+
+    function normalizeStatus(status) {
+      return String(status || "").toLowerCase() === "full" ? "full" : "available";
+    }
+
+    function renderSiteCards() {
+      const query = searchInput.value.trim().toLowerCase();
+
+      const filteredSites = sites.filter(site => {
+        const matchesSearch = String(site.siteId).toLowerCase().includes(query);
+        const matchesFilter = activeFilter === "all" ||
+          normalizeStatus(site.status) === activeFilter;
+        return matchesSearch && matchesFilter;
+      });
+
+      siteList.replaceChildren();
+
+      if (filteredSites.length === 0) {
+        const message = document.createElement("div");
+        message.className = "list-message";
+        message.textContent = sites.length ? "No matching sites found." : "No site data available.";
+        siteList.appendChild(message);
+        return;
+      }
+
+      filteredSites.forEach(site => {
+        const status = normalizeStatus(site.status);
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "site-card" +
+          (String(site.siteId) === String(selectedSiteId) ? " selected" : "");
+
+        const heading = document.createElement("h2");
+        heading.textContent = `SiteID ${site.siteId}`;
+
+        const stats = document.createElement("div");
+        stats.className = "card-stats";
+
+        stats.append(
+          createCardStat("Trucks at Site", site.trucks ?? "—"),
+          createCardStat("Lanes In Use", `${site.lanesInUse ?? "—"} / ${site.totalLanes ?? "—"}`),
+          createCardStat("Status", status === "full" ? "Full" : "Available", status)
+        );
+
+        card.append(heading, stats);
+
+        if (status === "full" && site.nextAvailableMinutes != null) {
+          const nextTime = document.createElement("span");
+          nextTime.className = "next-time";
+          nextTime.textContent = `Estimated Next Available Time: ${site.nextAvailableMinutes} mins.`;
+          card.appendChild(nextTime);
+        }
+
+        card.addEventListener("click", () => showDetails(site));
+        siteList.appendChild(card);
+      });
+    }
+
+    function createCardStat(label, value, statusClass = "") {
+      const wrapper = document.createElement("span");
+      wrapper.className = "stat";
+
+      const labelElement = document.createElement("span");
+      labelElement.className = "stat-label";
+      labelElement.textContent = label;
+
+      const valueElement = document.createElement("span");
+      valueElement.className = "stat-value" + (statusClass ? ` status ${statusClass}` : "");
+      valueElement.textContent = value;
+
+      wrapper.append(labelElement, valueElement);
+      return wrapper;
+    }
+
+    function showDetails(site) {
+      selectedSiteId = site.siteId;
+
+      document.getElementById("detailSiteTitle").textContent = `SiteID ${site.siteId}`;
+      document.getElementById("detailTrucks").textContent = site.trucks ?? "—";
+      document.getElementById("detailLanes").textContent = site.lanesInUse ?? "—";
+      document.getElementById("detailTotal").textContent = site.totalLanes ?? "—";
+      document.getElementById("detailTime").textContent = site.dispensingMinutes ?? "—";
+
+      const isFull = normalizeStatus(site.status) === "full";
+      document.getElementById("detailStatus").textContent = isFull ? "Full" : "Available";
+      document.getElementById("detailStatusBox").classList.toggle("full", isFull);
+
+      detailsSection.classList.add("visible");
+      renderSiteCards();
+    }
+
+    async function loadSites() {
+      try {
+        listMessage.textContent = "Loading site data...";
+
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error(`Backend returned HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error("Expected the backend to return an array of sites.");
+        }
+
+        sites = data;
+        document.getElementById("lastUpdated").textContent =
+          new Date().toLocaleString();
+
+        // If a previously selected site is still present, refresh its details.
+        if (selectedSiteId !== null) {
+          const updatedSite = sites.find(site =>
+            String(site.siteId) === String(selectedSiteId)
+          );
+          if (updatedSite) {
+            showDetails(updatedSite);
+          } else {
+            selectedSiteId = null;
+            detailsSection.classList.remove("visible");
+          }
+        }
+
+        renderSiteCards();
+      } catch (error) {
+        console.error("Unable to load site data:", error);
+        siteList.replaceChildren();
+        const message = document.createElement("div");
+        message.className = "list-message";
+        message.textContent = "Unable to load site data. Check the backend connection.";
+        siteList.appendChild(message);
+        document.getElementById("lastUpdated").textContent = "Unavailable";
+      }
+    }
+
+    searchInput.addEventListener("input", renderSiteCards);
+
+    document.querySelectorAll(".filter").forEach(button => {
+      button.addEventListener("click", () => {
+        const requestedFilter = button.dataset.filter;
+        activeFilter = activeFilter === requestedFilter ? "all" : requestedFilter;
+
+        document.querySelectorAll(".filter").forEach(filterButton => {
+          filterButton.classList.toggle(
+            "active",
+            filterButton.dataset.filter === activeFilter
+          );
+        });
+
+        renderSiteCards();
+      });
+    });
+
+    // Initial request to the backend. The UI starts without site records.
+    loadSites();
+
+    // Optional polling for updated backend data every 30 seconds.
+    // Uncomment this line if the dashboard should refresh automatically.
+    // setInterval(loadSites, 30000);
+  </script>
+</body>
+</html>
