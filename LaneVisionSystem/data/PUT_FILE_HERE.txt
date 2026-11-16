@@ -1,0 +1,3 @@
+Put downloaded JSON metadata files here, then open Start Playback.app.
+The app reads each record's url and downloads the image automatically.
+Local JPG files are not required. Internet and accessible Blob URLs are required.
