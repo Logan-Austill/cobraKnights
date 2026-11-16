@@ -14,6 +14,87 @@
       --red: #e32626;
     }
 
+    /* Login Page */
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #071b91;
+    }
+
+    .login-container {
+      width: 90%;
+      max-width: 420px;
+      padding: 35px;
+      background: white;
+      border-radius: 15px;
+      text-align: center;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    }
+
+    .login-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .login-logo {
+      width: 180px;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .login-container h1 {
+      font-size: 25px;
+      margin-bottom: 10px;
+    }
+
+    .login-container p {
+      color: #555;
+    }
+
+    .login-container label {
+      display: block;
+      text-align: left;
+      margin: 18px 0 6px;
+      font-weight: bold;
+    }
+
+    .login-container input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #aaa;
+      border-radius: 7px;
+      font-size: 15px;
+    }
+
+    .login-container button {
+      width: 100%;
+      margin-top: 25px;
+      padding: 12px;
+      background: #071b91;
+      color: white;
+      border: none;
+      border-radius: 7px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .login-container button:hover {
+      background: #078cff;
+    }
+
+    .login-error {
+      color: red !important;
+      font-size: 14px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -188,13 +269,44 @@
   </style>
 </head>
 <body>
-  <aside class="blue-overlay">
+  <aside class="blue-overlay hidden" id="dashboardSidebar">
     <img src="C:\Users\blubb\Pictures\sitepro_logo.png"
          alt="SitePro Logo"
          class="sidebar-logo">
-</aside>
+  </aside>
+</body>
 
-  <main class="page">
+<section id="loginPage" class="login-page">
+  <div class="login-wrapper">
+
+    <img src="C:\Users\blubb\Pictures\sitepro_logo.png"
+         alt="SitePro Logo"
+         class="login-logo">
+
+    <div class="login-container">
+      <h1>SitePro Lane Vision Demo</h1>
+      <p>Please sign in to access the dashboard.</p>
+
+      <form id="loginForm">
+
+        <label for="username">Username</label>
+        <input type="text" id="username"
+              placeholder="Enter username" required>
+
+        <label for="password">Password</label>
+        <input type="password" id="password"
+              placeholder="Enter password" required>
+
+        <button type="submit">Login</button>
+
+        <p id="loginError" class="login-error"></p>
+
+      </form>
+    </div>
+  </div>
+</section>
+
+  <main class="page hidden" id="dashboard">
     <header class="topbar">
       <h1>Sites Activity</h1>
       <div class="updated">Last Updated: <span id="lastUpdated">Waiting for data</span></div>
@@ -283,6 +395,33 @@
     let selectedSiteId = null;
     let activeFilter = "all";
 
+    const loginForm = document.getElementById("loginForm");
+    const loginPage = document.getElementById("loginPage");
+    const dashboard = document.getElementById("dashboard");
+    const dashboardSidebar = document.getElementById("dashboardSidebar");
+
+    loginForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        // Demo login: accepts any nonempty credentials
+        if (username && password) {
+
+            loginPage.classList.add("hidden");
+            dashboard.classList.remove("hidden");
+            dashboardSidebar.classList.remove("hidden");
+
+            // Load dashboard data after login
+            loadSites();
+
+        } else {
+            document.getElementById("loginError").textContent =
+                "Please enter your username and password.";
+        }
+    });
+    
     function normalizeStatus(status) {
       return String(status || "").toLowerCase() === "full" ? "full" : "available";
     }
